@@ -1,0 +1,189 @@
+---
+title: "KPMG AU Data Analytics virtual internship"
+author: "usman derek yahaya"
+date: "24/2/2023"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+```
+
+## Introduction
+
+This is a case study solution for the KPMG Virtual Internship, this
+internship covers tasks in Data Quality Assessment, Data Insight, Data
+Insight and Presentation.
+
+## Content
+
+1.Background 2.Data Quality Assessment 3.Data Insight 4.Data Insights
+and Presentation
+
+### Background
+
+As a data analyst for a medium size bikes & cycling accessories
+organisation, Sprocket Central Pty Ltd would like to for me to help
+review its customer and transactions data. The organisation has a large
+data set relating to its customers and would like for the data analytics
+team to analyse it to help optimize its marketing strategy. The team
+lead provided me with 3 datasheets:
+
+1.Customer Demographic 2.Customer Addresses 3.Transactions data in the
+past 3 months
+
+### Data Quality Assessment
+
+Data Quality Assessment is a process of evaluating data and measuring it
+against selected quality criteria such as completeness and validity
+(GeeksforGeeks, 2022). therefore our data would have to possess
+qualities of a Data Quality Assessment, the following below can be
+regarded as characteristics of data quality assessment.
+
+1.  **Accuracy: Error-free or misspellings free**
+2.  **Completeness: Free of empty rows/values**
+3.  **Consistency: Linking Primary Key**
+4.  **Timeliness: Relevant Data with Relevant Time period**
+5.  **Relevance: special characters free**
+6.  **Validity: The appropriate data type for analysis**
+7.  **Uniqueness: Free of duplicate rows/values**
+
+```{r loading packages, echo=FALSE, warning=FALSE}
+library(tidyverse)
+```
+
+###Retrievng Data Information
+```{r data structure}
+KPMG_DATA_CustomerAddress <- read_csv("C:/Users/kenne/OneDrive/Desktop/KPMG/KPMG_DATA - CustomerAddress.csv")
+KPMG_DATA_CustomerDemographic <- read_csv("C:/Users/kenne/OneDrive/Desktop/KPMG/KPMG_DATA - CustomerDemographic.csv")
+KPMG_DATA_Transaction <- read_csv("C:/Users/kenne/OneDrive/Desktop/KPMG/KPMG_DATA - Transaction.csv")
+
+df <- KPMG_DATA_Transaction
+Address <- KPMG_DATA_CustomerAddress
+Demo <- KPMG_DATA_CustomerDemographic
+```
+
+###Data Preview
+```{r display data structures}
+str(df)
+str(Address)
+str(Demo)
+```
+
+
+```
+
+### Checking For Missing Values
+```{r NA values}
+## The transaction data looks to have some missing values
+apply(X = is.na(df), MARGIN = 2, FUN = sum)
+```
+Next we look at the data to review the context behind the missing data and of what repercussion it is to the analysis.
+```{r data preview}
+str(df)
+```
+The transactions has less than 1% of transactions (totalling less than 0.1% of revenue) with missing fields. These records can be removed from the database.
+```{r remove NA values}
+df2 <- df[complete.cases(df), ]
+```
+
+
+```{r}
+##Next we combine the customer and demography data
+
+list_df = list(Demo,Address)
+customer <- list_df %>% reduce(left_join, by = 'customer_id')
+
+apply(X = is.na(customer), MARGIN = 2, FUN = sum)
+```
+The customer database also does have missing value, however, key variables to the analysis such as bike related purchases, wealth segement, car owner seem to have required data for analysis. 
+
+However, we are analyzing for australia and as such customers not in the country are dropped.
+```{r}
+customer <- customer %>% drop_na(country)
+```
+
+### Checking Data Type
+```{r}
+str(customer)
+```
+```{r}
+str(df2)
+```
+```{r}
+## Change customer date of birth in customer data frame from character to date
+
+```
+
+### Summary Statistics
+```{r}
+## Descriptive Statistics
+summary(df)
+
+```
+
+```{r}
+summary(customer)
+```
+### Checking for outliers
+```{r}
+
+boxplot(df$list_price,
+        ylab = "Price")
+```
+From the box plot, it doesn't seem to be an outlier. 
+
+```{r}
+boxplot(customer$bike_related_purchases,
+        ylab = "Purchase")
+```
+
+```{r warning=FALSE}
+boxplot(customer$tenure,
+        ylab = "Tenure")
+```
+
+## Data Insight
+Here we will go through a series of visualizations.
+
+### Customers Preference by Brand
+Here, we plot the count of customers purchase according to the brand
+```{r}
+ggplot(data = df) +
+  geom_bar(mapping = aes(x = brand, fill=brand))
+```
+
+###  Preference by Brand
+Here, we plot the sales according to the different brands of bikes sold.
+```{r}
+ggplot(data = df) +
+  geom_col(mapping = aes(x = brand, y = list_price, fill=brand))
+
+```
+
+###  Sales by Car Owners
+Here, we plot the customer purchase based on whether they own a car or not.
+```{r}
+ggplot(data = customer) +
+  geom_col(mapping = aes(x = owns_car, y = bike_related_purchases, fill=deceased_indicator))
+```
+
+###  Customer Wealth Classification according to State.
+Here, we plot wealth classification according of customers according to states.
+```{r}
+ggplot(data = customer) +
+  geom_bar(mapping = aes(x = state, fill=wealth_segment))
+```
+
+### Data Insight and Presentation
+
+In the final step, we will be delivering our insights and providing recommendations based on our analysis.
+
+Here, we revisit our business questions and share with you our high-level business recommendations.
+
+1. What are the trends identified?
+
+* Majority of customers prefer the solex bike brand as compared to the norco bicycle brand.
+* Mass Customer consist of a large number across states in Australia.
